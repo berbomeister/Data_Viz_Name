@@ -1,0 +1,96 @@
+---
+title: "US Labour Statistics Visualisation"
+---
+
+## Introduction
+
+The data consists of various information collected by surveys from the US Bureau of Labor Statistics. It was downloaded from the Federal Reserve Economic Data website of the Federal Reserve Bank of St. Louis.
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+data.monthly <- read_tsv("./data/data_viz_project_Monthly.txt")
+```
+
+## Lets view the data
+
+```{r}
+data.monthly
+```
+
+## Not very helpful {.hscroll .scrollable}
+
+Seems like there are a lot of columns with some weird codes.
+Lets try to check what they are:
+
+```{r}
+read_lines("./data/data_viz_project_README.txt",n_max = 200)
+```
+## Not very tidy
+So these seem to be names of datasets, probably from the BLS. There are some columns that seem to be missing, that start with "LNS". Looks like those are just the seasonally adjusted values, compared to "LNU" for unadjusted values. Lets for now look only at seasonally adjusted.
+
+## Our first graph
+
+```{r}
+codes_and_names <- c(
+  "CE16OV" = "Employment Level",
+  "LNS12000001" = "Employment Level - Men",
+  "LEU0252917000Q" = "Employed full time: High School grads (Quarterly)",
+  "LEU0254477200A" = "Employed full time: Software Developers (16+)",
+  "LEU0254478500A" = "Employed full time: Aerospace Engineers (16+)",
+  "LEU0254479600A" = "Employed full time: Mechanical Engineers (16+)",
+  "LEU0254510500A" = "Employed full time: Automotive Technicians (16+)",
+  "LEU0254521700A" = "Employed full time: Drivers/Truck Workers (16+)",
+  "LEU0257877800A" = "Employed full time: Solar Installers (16+)",
+  "LEU0264466800A" = "Employed part time (Annual)",
+  "LEU0264466800Q" = "Employed part time (Quarterly)",
+  "LNS12000001" = "Employment Level - Men",
+  "LNS12000002" = "Employment Level - Women",
+  "LNS12000006" = "Employment Level - Black/African American",
+  "LNS12000060" = "Employment Level (25-54 Yrs)",
+  "LNS12000089" = "Employment Level (25-34 Yrs)",
+  "LNS12000315" = "Employment Level - Married Women",
+  "LNS12024230" = "Employment Level (55+ Yrs)",
+  "LNS12027659" = "Employment Level (<High School, 25+ Yrs)",
+  "LNS12027662" = "Employment Level (Bachelor's, 25+ Yrs)",
+  "LNS12027714" = "Employment Level - Self-Employed, Unincorporated",
+  "LNS12032192" = "Employment Level - Nonagriculture Self-Employed",
+  "LNS12032197" = "Employment Level - Part-Time (Economic Reasons)",
+  "LNS12032200" = "Employment Level - Part-Time (Noneconomic Reasons)",
+  "LNS12034560" = "Employment Level - Agriculture",
+  "LNS12500000" = "Employed, Usually Work Full Time",
+  "LNS12600000" = "Employed, Usually Work Part Time",
+  "LNU02000000" = "Employment Level",
+  "LNU02000001" = "Employment Level - Men",
+  "LNU02000002" = "Employment Level - Women",
+  "LNU02000006" = "Employment Level - Black/African American",
+  "LNU02000060" = "Employment Level (25-54 Yrs)",
+  "LNU02000089" = "Employment Level (25-34 Yrs)",
+  "LNU02000315" = "Employment Level - Married Women",
+  "LNU02005977" = "Part-Time Work, Noneconomic Reasons",
+  "LNU02024230" = "Employment Level (55+ Yrs)",
+  "LNU02027659" = "Employment Level (<High School, 25+ Yrs)",
+  "LNU02027662" = "Employment Level (Bachelor's, 25+ Yrs)",
+  "LNU02027714" = "Employment Level - Self-Employed, Unincorporated",
+  "LNU02032192" = "Employment Level - Nonagriculture Self-Employed",
+  "LNU02032201" = "Employment Level - Management/Professional",
+  "LNU02032210" = "Employment Level - Construction/Extraction",
+  "LNU02034560" = "Employment Level - Agriculture",
+  "LNU02048984" = "Employment Level - Wage/Salary, Incorporated",
+  "LNU02073395" = "Employment Level - Foreign Born",
+  "LNU02073413" = "Employment Level - Native Born",
+  "LNU02074597" = "Employed - With a Disability (16+ Yrs)",
+  "LNU02076960" = "Employed - With a Disability (16-64 Yrs, Women)",
+  "LNU02500000" = "Employed, Usually Work Full Time",
+  "LNU02600000" = "Employed, Usually Work Part Time"
+)
+```
+
+```{r}
+data.monthly |> 
+  gather()
+```
+# MAYBE CONSIDER USING OTHER DATA
