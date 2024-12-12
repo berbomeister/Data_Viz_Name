@@ -23,13 +23,14 @@ data.monthly
 
 ## Not very helpful {.hscroll .scrollable}
 
-Seems like there are a lot of columns with some weird codes.
-Lets try to check what they are:
+Seems like there are a lot of columns with some weird codes. Lets try to check what they are:
 
 ```{r}
 read_lines("./data/data_viz_project_README.txt",n_max = 200)
 ```
+
 ## Not very tidy
+
 So these seem to be names of datasets, probably from the BLS. There are some columns that seem to be missing, that start with "LNS". Looks like those are just the seasonally adjusted values, compared to "LNU" for unadjusted values. Lets for now look only at seasonally adjusted.
 
 ## Our first graph
@@ -93,4 +94,5 @@ codes_and_names <- c(
 data.monthly |> 
   gather()
 ```
+
 # MAYBE CONSIDER USING OTHER DATA
