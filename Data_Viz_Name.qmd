@@ -1,98 +1,513 @@
 ---
 title: "US Labour Statistics Visualisation"
+author: "Kliment Berbatov"
+format: 
+  revealjs: 
+    theme: serif
 ---
 
-## Introduction
+### Introduction
 
-The data consists of various information collected by surveys from the US Bureau of Labor Statistics. It was downloaded from the Federal Reserve Economic Data website of the Federal Reserve Bank of St. Louis.
+The data consists of various information collected by surveys from the US Bureau of Labor Statistics. Most of it was downloaded from the Federal Reserve Economic Data website of the Federal Reserve Bank of St. Louis. The exception is US labour participation rate by race and gender, which was taken from... US Department of Labour. So many administrations...
+
+Anyway, huge thanks to FRED.
+
+------------------------------------------------------------------------
 
 ```{r}
+#| include: false
 library(tidyverse)
 library(ggplot2)
+LPR_color <- "blue"
+UR_color <- "purple1"
+recession_color <- "gray"
 ```
+
+### Lets view the data
+
+Wait...
+
+First, we need to load it.
 
 ```{r}
-data.monthly <- read_tsv("./data/data_viz_project_Monthly.txt")
+dataset_project <- read_csv(file="./data/project_dataset.csv")
 ```
 
-## Lets view the data
+------------------------------------------------------------------------
+
+### Okay, lets look at unemployment rate (UR) and labour participation rate (LPR) for the whole recorded history of the US.
 
 ```{r}
-data.monthly
+#| echo: false
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_line(aes(y = UR,color = "Unemployment Rate")) +
+  geom_line(aes(y = labour_participation,color = "Labour Participation Rate"))+
+  theme_bw() +
+  labs(color = "metrics",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
 
-## Not very helpful {.hscroll .scrollable}
+------------------------------------------------------------------------
 
-Seems like there are a lot of columns with some weird codes. Lets try to check what they are:
+### Lets also add recession periods.
 
 ```{r}
-read_lines("./data/data_viz_project_README.txt",n_max = 200)
+#| message: false
+#| echo: false
+recessions <- read_csv(file="./data/recessions.csv")
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_rect(
+    data = recessions |> filter(Peak > "1948-01-01"),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(aes(y = UR, color = "Unemployment Rate")) +
+  geom_line(aes(y = labour_participation,color = "Labour Participation Rate"))+
+  theme_bw() +
+  labs(color = "statistic",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
 
-## Not very tidy
+------------------------------------------------------------------------
 
-So these seem to be names of datasets, probably from the BLS. There are some columns that seem to be missing, that start with "LNS". Looks like those are just the seasonally adjusted values, compared to "LNU" for unadjusted values. Lets for now look only at seasonally adjusted.
-
-## Our first graph
+### Maybe we should scale LPR so its easier to compare. (It's scaled axis is on the left)
 
 ```{r}
-codes_and_names <- c(
-  "CE16OV" = "Employment Level",
-  "LNS12000001" = "Employment Level - Men",
-  "LEU0252917000Q" = "Employed full time: High School grads (Quarterly)",
-  "LEU0254477200A" = "Employed full time: Software Developers (16+)",
-  "LEU0254478500A" = "Employed full time: Aerospace Engineers (16+)",
-  "LEU0254479600A" = "Employed full time: Mechanical Engineers (16+)",
-  "LEU0254510500A" = "Employed full time: Automotive Technicians (16+)",
-  "LEU0254521700A" = "Employed full time: Drivers/Truck Workers (16+)",
-  "LEU0257877800A" = "Employed full time: Solar Installers (16+)",
-  "LEU0264466800A" = "Employed part time (Annual)",
-  "LEU0264466800Q" = "Employed part time (Quarterly)",
-  "LNS12000001" = "Employment Level - Men",
-  "LNS12000002" = "Employment Level - Women",
-  "LNS12000006" = "Employment Level - Black/African American",
-  "LNS12000060" = "Employment Level (25-54 Yrs)",
-  "LNS12000089" = "Employment Level (25-34 Yrs)",
-  "LNS12000315" = "Employment Level - Married Women",
-  "LNS12024230" = "Employment Level (55+ Yrs)",
-  "LNS12027659" = "Employment Level (<High School, 25+ Yrs)",
-  "LNS12027662" = "Employment Level (Bachelor's, 25+ Yrs)",
-  "LNS12027714" = "Employment Level - Self-Employed, Unincorporated",
-  "LNS12032192" = "Employment Level - Nonagriculture Self-Employed",
-  "LNS12032197" = "Employment Level - Part-Time (Economic Reasons)",
-  "LNS12032200" = "Employment Level - Part-Time (Noneconomic Reasons)",
-  "LNS12034560" = "Employment Level - Agriculture",
-  "LNS12500000" = "Employed, Usually Work Full Time",
-  "LNS12600000" = "Employed, Usually Work Part Time",
-  "LNU02000000" = "Employment Level",
-  "LNU02000001" = "Employment Level - Men",
-  "LNU02000002" = "Employment Level - Women",
-  "LNU02000006" = "Employment Level - Black/African American",
-  "LNU02000060" = "Employment Level (25-54 Yrs)",
-  "LNU02000089" = "Employment Level (25-34 Yrs)",
-  "LNU02000315" = "Employment Level - Married Women",
-  "LNU02005977" = "Part-Time Work, Noneconomic Reasons",
-  "LNU02024230" = "Employment Level (55+ Yrs)",
-  "LNU02027659" = "Employment Level (<High School, 25+ Yrs)",
-  "LNU02027662" = "Employment Level (Bachelor's, 25+ Yrs)",
-  "LNU02027714" = "Employment Level - Self-Employed, Unincorporated",
-  "LNU02032192" = "Employment Level - Nonagriculture Self-Employed",
-  "LNU02032201" = "Employment Level - Management/Professional",
-  "LNU02032210" = "Employment Level - Construction/Extraction",
-  "LNU02034560" = "Employment Level - Agriculture",
-  "LNU02048984" = "Employment Level - Wage/Salary, Incorporated",
-  "LNU02073395" = "Employment Level - Foreign Born",
-  "LNU02073413" = "Employment Level - Native Born",
-  "LNU02074597" = "Employed - With a Disability (16+ Yrs)",
-  "LNU02076960" = "Employed - With a Disability (16-64 Yrs, Women)",
-  "LNU02500000" = "Employed, Usually Work Full Time",
-  "LNU02600000" = "Employed, Usually Work Part Time"
-)
+#| echo: false
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_rect(
+    data = recessions |> filter(Peak > "1948-01-01"),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(aes(y = UR, color = "Unemployment Rate")) +
+  geom_line(aes(y = (labour_participation)*0.15,color = "Labour Participation Rate"))+
+  scale_y_continuous(
+    sec.axis = sec_axis(~./0.15)
+  ) +
+  theme_bw() +
+  labs(color = "statistic",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
+
 ```
+
+------------------------------------------------------------------------
+
+### Looks like there isn't anything we can easily extract from this, so lets zoom in to recent history.
 
 ```{r}
-data.monthly |> 
-  gather()
+#| echo: false
+date_start <- "2000-01-01"
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  filter(date > date_start) |> 
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_rect(
+    data = recessions |> filter(Peak > date_start),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(aes(y = UR, color = "Unemployment Rate")) +
+  geom_line(aes(y = (labour_participation)*0.15,color = "Labour Participation Rate"))+
+  scale_y_continuous(
+    sec.axis = sec_axis(~./0.15)
+  ) +
+  theme_bw() +
+  labs(color = "statistic",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
 
-# MAYBE CONSIDER USING OTHER DATA
+------------------------------------------------------------------------
+
+# Can you spot that, lets enhance.
+
+---
+
+```{r}
+#| echo: false
+date_start <- "2019-01-01"
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  filter(date > date_start) |> 
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_rect(
+    data = recessions |> filter(Peak > date_start),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(aes(y = UR, color = "Unemployment Rate")) +
+  geom_line(aes(y = (labour_participation)*0.15,color = "Labour Participation Rate"))+
+  scale_y_continuous(
+    sec.axis = sec_axis(~./0.15)
+  ) +
+  theme_bw() +
+  labs(color = "statistic",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
+```
+Looks like COVID had a huge hit on labour participation rate as well as unemployment rate.
+
+------------------------------------------------------------------------
+
+### Lets look only at LPR
+
+```{r}
+#| echo: false
+date_start <- "2019-01-01"
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  filter(date > date_start) |> 
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_rect(
+    data = recessions |> filter(Peak > date_start),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(aes(y = (labour_participation),color = "Labour Participation Rate"))+
+  theme_bw() +
+  labs(color = "statistic",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Labour Participation Rate" = LPR_color ))
+```
+
+------------------------------------------------------------------------
+
+### Zooming out for more details.
+
+
+```{r}
+#| echo: false
+date_start <- "1948-01-01"
+dataset_project |> filter(index == "UR" | index == "labour_participation") |>
+  filter(date > date_start) |> 
+  pivot_wider(names_from = index,values_from = value) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_rect(
+    data = recessions |> filter(Peak > date_start),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(aes(y = (labour_participation),color = "Labour Participation Rate"))+
+  theme_bw() +
+  labs(color = "statistic",x = "Date", y = "Rate") +
+  scale_color_manual(values = c("Labour Participation Rate" = LPR_color ))
+```
+
+------------------------------------------------------------------------
+
+There seems to be a general trend downwards for the labour participation rate, at least since the 2000s. This can mean that more and more people are sick of traditional jobs, and are turning to other forms of financial support.
+
+---
+
+### What about the effect of race and sex?
+
+```{r}
+#| echo: false
+us_lpr_yearly <- dataset_project |> filter(str_detect(index,"^labour_participation$"))
+dataset_project |> filter(str_detect(index,"LPR")) |> filter(!is.na(value)) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_line(aes(y = value,color = index))+
+  geom_line(data = us_lpr_yearly,aes(x = date, y= value,linetype = "total"),inherit.aes = FALSE,color=LPR_color) + 
+  scale_color_hue(
+    labels = \(x) str_remove(x,"_LPR") |>  str_replace_all("_", " ")
+  ) +
+  # scale_color_manual(values = \(x) ifelse(x == "total",LPR_color,virid))
+  theme_bw() + 
+  labs(color = "Labour Participation",x = "Date", y = "Rate",linetype=NULL) +
+  theme(
+    legend.spacing = unit(-1,'pt'),
+    legend.margin = margin(t=0,b=0,unit='pt')
+    )
+```
+
+------------------------------------------------------------------------
+
+### Seems like the trend for men has been decreasing as well
+
+```{r}
+#| echo: false
+dataset_project |> filter(str_detect(index,"LPR")) |> 
+  filter(!str_detect(index,"women")) |> 
+  filter(!is.na(value)) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_line(aes(y = value,color = index,group = index))+
+  scale_color_hue(
+    labels = \(x) str_remove(x,"_LPR") |>  str_replace_all("_", " ")
+  ) +
+  theme_bw() +
+  labs(color = "Labour Participation",x = "Date", y = "Rate") 
+```
+
+------------------------------------------------------------------------
+
+### Lets look at women.
+
+Obviously, they have had a steady increase since the end of WWII up until the 2000s, so lets look only at recent times.
+
+```{r}
+#| echo: false
+dataset_project |> filter(str_detect(index,"LPR")) |> 
+  filter(str_detect(index,"women")) |> 
+  filter(!is.na(value)) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_line(aes(y = value,color = index,group = index))+
+  scale_color_hue(
+    labels = \(x) str_remove(x,"_LPR") |>  str_replace_all("_", " ")
+  ) +
+  theme_bw() +
+  labs(color = "Labour Participation",x = "Date", y = "Rate") 
+```
+
+------------------------------------------------------------------------
+
+### Zooming in to modern times
+
+Looks like its stagnating a little, going with the general trend of LPR.
+
+```{r}
+#| echo: false
+date_start <- "2000-01-01"
+dataset_project |> filter(str_detect(index,"LPR")) |> 
+  filter(str_detect(index,"women")) |> 
+  filter(!is.na(value)) |> 
+  filter(date > date_start) |> 
+  ggplot() +
+  aes(x = date) +
+  geom_line(aes(y = value,color = index,group = index))+
+  scale_color_hue(
+    labels = \(x) str_remove(x,"_LPR") |>  str_replace_all("_", " ")
+  ) +
+  theme_bw() +
+  labs(color = "Labour Participation",x = "Date", y = "Rate") 
+```
+
+------------------------------------------------------------------------
+
+### An abstract way to visualize effect of both race and sex (though not very helpful)
+
+```{r}
+#| echo: false
+dataset_project |> filter(str_detect(index,"LPR")) |> 
+  filter(!is.na(value)) |> 
+  separate(index, into=c("race","sex","metric"),sep="_") |> 
+  select(-metric) |> 
+  bind_rows(us_lpr_yearly) |>
+  arrange(date) |> 
+  filter(!is.na(race)) |> 
+  ggplot( aes(x = race, y = value, fill = sex)) +
+  geom_violin(position = position_dodge(width = 0.8))+
+  theme_bw() +
+  theme(panel.grid = element_blank()) + 
+  labs(y = "LPR")
+```
+
+------------------------------------------------------------------------
+
+### Alternatively we can look at a bar plot
+
+
+```{r}
+#| echo: false
+dataset_project |> filter(str_detect(index,"LPR")) |> 
+  filter(!is.na(value)) |> 
+  filter(date >= "2000-01-01") |> 
+  separate(index, into=c("race","sex","metric"),sep="_") |> 
+  group_by(race,sex) |> 
+  summarise(avg = mean(value,na.rm=TRUE), .groups = "drop") |>
+  ggplot() +
+  aes(x = race,y = avg, fill = sex) |> 
+  geom_bar(position = "dodge",stat = "identity") +
+  theme_bw() +
+  theme(panel.grid = element_blank()) +
+  labs(title = "Mean LPR since 2000", y = "LPR")
+```
+
+---
+
+Looks like for black people the difference between men and women is drastically smaller compared to other races. Possibly due to cultural differences, or societal circumstances.
+
+------------------------------------------------------------------------
+
+### What about data for different states?
+
+```{r}
+#| echo: false
+#| warning: false
+dataset_project |> filter(str_detect(index,"labour_participation_rate")) |> 
+  mutate(index = str_remove(index,"_labour_participation_rate")) |> 
+  ggplot() +
+  aes(x = date, y = value)+
+  geom_line() +
+  facet_wrap(~ index)
+```
+
+------------------------------------------------------------------------
+
+### We can't possibly visualize all states at once. Lets look at NY, CA, and WI.
+
+```{r}
+#| warning: false
+#| echo: false
+dataset_project |> filter(str_detect(index,"labour_participation_rate")) |> 
+  filter(str_detect(index,"NY|CA|WI")) |> 
+  mutate(index = str_remove(index,"_labour_participation_rate")) |> 
+  ggplot() +
+  aes(x = date, y = value)+
+  geom_line(aes(color = index)) +
+  geom_line(data = us_lpr_yearly,aes(color = "total")) + 
+  # facet_wrap(~ index) +
+  scale_color_manual(values = c("total" = LPR_color, "WI" = "red", NY = "green", "CA" = "magenta"))+
+  theme_bw()
+```
+
+------------------------------------------------------------------------
+
+### Wyoming on paper looks good but...
+
+While states like NY and CA have somewhat regained their pre-COVID values, Wyoming has generally continued to stagnate.
+
+```{r}
+#| warning: false
+#| echo: false
+start_date <- "2007-01-01"
+dataset_project |> filter(str_detect(index,"labour_participation_rate")) |> 
+  filter(str_detect(index,"NY|CA|WI")) |> 
+  filter(date > start_date) |> 
+  mutate(index = str_remove(index,"_labour_participation_rate")) |> 
+  ggplot() +
+  aes(x = date, y = value)+
+  geom_line(aes(color = index)) +
+  geom_line(data = us_lpr_yearly |> filter(date > start_date),
+            aes(linetype = "US"),color = LPR_color) + 
+  # facet_wrap(~ index) +
+  scale_color_manual(values = c("US" = LPR_color, "WI" = "red", NY = "green", "CA" = "magenta"))+
+  labs(color = "State",y = "Rate",title = "Labour participation rate") +
+  theme_bw()
+
+```
+
+------------------------------------------------------------------------
+
+### Looking at other metrics for Wyoming.
+
+```{r}
+#| echo: false
+start_date <- "2007-01-01"
+dataset_project |> filter(str_detect(index,"WI"))|> 
+  filter(!is.na(value)) |> 
+  ggplot() +
+  aes(x = date, y = value)+
+  geom_line(aes(color = index)) +
+  scale_color_hue(labels = \(x) x |> str_remove("WI_") |> str_replace_all("_"," "))+
+  facet_wrap(~ index,scales = "free_y") +
+  labs(color = "metrics",title = "Wyoming") +
+  theme_bw()+
+  theme(strip.text.x = element_blank(),strip.background = element_blank())
+```
+
+------------------------------------------------------------------------
+
+### These values are all over the place
+
+
+```{r}
+#| echo: false
+wyoming_1980_house_price <- 59800 / 100
+dataset_project |> filter(str_detect(index,"WI"))|> 
+  filter(str_detect(index,"house|income|labour")) |> 
+  filter(!is.na(value)) |> 
+  pivot_wider(names_from = index,values_from = value) |> 
+  filter(!is.na(WI_median_income)) |>
+  arrange(date)|> 
+  ggplot() +
+  aes(x = date) +
+  geom_line(
+    aes(y = WI_median_income/1000,color = "Median Income")
+  )+
+  geom_line(
+    aes(y = WI_house_price_index*wyoming_1980_house_price/1000,color = "Median House\nPrice")
+  )+
+  geom_line(
+    aes(y = (WI_labour_participation_rate-65)*30,color = "Labour Participation\nRate")
+  )+
+  theme_bw()+
+  labs(y = "", color ="metrics",title="Don't think about values for a second...")+
+  scale_color_manual(values =c(
+    "Labour Participation\nRate" = LPR_color,
+    "Median House\nPrice" = "lightgreen",
+    "Median Income" = "magenta"
+  ))+
+  theme(
+    axis.ticks.y.left = element_blank(),
+    axis.text.y.left = element_blank()
+  )
+
+```
+
+------------------------------------------------------------------------
+
+### Going back to the federal level
+
+```{r}
+#| echo: false
+dataset_project |> filter(str_detect(index,"^UR$|US_median")) |> 
+  filter(!is.na(value)) |> 
+  pivot_wider(names_from = index,values_from = value) |> 
+  remove_missing(na.rm=TRUE) |> 
+  ggplot()+
+  aes(x=date) +
+  geom_line(
+    aes(y = UR/100 * 500000,color = "Unemployment Rate")
+  )+
+  geom_rect(
+    data = recessions |> filter(Peak > "1989-01-01"),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3) +
+  geom_line(
+    aes(y = US_median_house_price, color = "Median House\nPrice")
+  )+
+  geom_line(
+    aes(y = US_median_income,color = "Median Income")
+  )+
+  scale_y_continuous(
+    labels = scales::comma,
+    sec.axis = sec_axis(~.*100/500000,name="Rate (%)")
+)+
+  scale_color_manual(values =c(
+    "Unemployment Rate" = UR_color,
+    "Median House\nPrice" = "lightgreen",
+    "Median Income" = "magenta"
+  ))+
+  labs(color = "metrics",y="Value ($)")+
+  theme_bw()
+```
+
+------------------------------------------------------------------------
+
+### And many more
+
+This dataset includes over 300 variables, for US and state labour statistics, including such for different race, sex, and age.  
+
+![](fred-logo-2x.png) ---
