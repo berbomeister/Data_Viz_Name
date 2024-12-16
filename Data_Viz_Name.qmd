@@ -4,6 +4,7 @@ author: "Kliment Berbatov"
 format: 
   revealjs: 
     theme: serif
+    incremental: true
 ---
 
 ### Introduction
@@ -25,18 +26,27 @@ recession_color <- "gray"
 
 ### Lets view the data
 
-Wait...
-
-First, we need to load it.
+Wait... First, we need to load it.
 
 ```{r}
+#| echo: true
 dataset_project <- read_csv(file="./data/project_dataset.csv")
 ```
+
+Lots and lots of indecies:
+
+-   Unemployment rate for the US and for each state
+-   Unemployment rate by race, age, and sex for the US
+-   Labour participation rate for the US and for each state
+-   Labour participation rate by race and sex for the US
+-   Median household income for the US and for each state
+-   Median sales price of houses sold for the US and for each state
 
 ------------------------------------------------------------------------
 
 ### Okay, lets look at unemployment rate (UR) and labour participation rate (LPR) for the whole recorded history of the US.
 
+::: fragment
 ```{r}
 #| echo: false
 dataset_project |> filter(index == "UR" | index == "labour_participation") |>
@@ -49,11 +59,13 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   labs(color = "metrics",x = "Date", y = "Rate") +
   scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Lets also add recession periods.
 
+::: fragment
 ```{r}
 #| message: false
 #| echo: false
@@ -74,11 +86,13 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   labs(color = "statistic",x = "Date", y = "Rate") +
   scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Maybe we should scale LPR so its easier to compare. (It's scaled axis is on the left)
 
+::: fragment
 ```{r}
 #| echo: false
 dataset_project |> filter(index == "UR" | index == "labour_participation") |>
@@ -92,20 +106,23 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
     fill=recession_color,
     alpha = 0.3) +
   geom_line(aes(y = UR, color = "Unemployment Rate")) +
-  geom_line(aes(y = (labour_participation)*0.15,color = "Labour Participation Rate"))+
+  geom_line(aes(y = (labour_participation-57.5)/(67.5-57.6)*15,color = "Labour Participation Rate"))+
   scale_y_continuous(
-    sec.axis = sec_axis(~./0.15)
+    sec.axis = sec_axis(~./15*(67.5-57.5)+57.5),
+    name = "Rate (%)"
   ) +
   theme_bw() +
-  labs(color = "statistic",x = "Date", y = "Rate") +
+  labs(color = "statistic",x = "Date", y = "Rate (%)") +
   scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Looks like there isn't anything we can easily extract from this, so lets zoom in to recent history.
 
+::: fragment
 ```{r}
 #| echo: false
 date_start <- "2000-01-01"
@@ -121,21 +138,22 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
     fill=recession_color,
     alpha = 0.3) +
   geom_line(aes(y = UR, color = "Unemployment Rate")) +
-  geom_line(aes(y = (labour_participation)*0.15,color = "Labour Participation Rate"))+
+  geom_line(aes(y = (labour_participation-57.5)/(67.5-57.6)*15,color = "Labour Participation Rate"))+
   scale_y_continuous(
-    sec.axis = sec_axis(~./0.15)
+    sec.axis = sec_axis(~./15*(67.5-57.5)+57.5),
+    name = "Rate (%)"
   ) +
   theme_bw() +
-  labs(color = "statistic",x = "Date", y = "Rate") +
+  labs(color = "statistic",x = "Date", y = "Rate (%)") +
   scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
+:::
 
 ------------------------------------------------------------------------
 
-# Can you spot that, lets enhance.
+### Can you spot that, lets enhance.
 
----
-
+::: fragment
 ```{r}
 #| echo: false
 date_start <- "2019-01-01"
@@ -151,20 +169,26 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
     fill=recession_color,
     alpha = 0.3) +
   geom_line(aes(y = UR, color = "Unemployment Rate")) +
-  geom_line(aes(y = (labour_participation)*0.15,color = "Labour Participation Rate"))+
+  geom_line(aes(y = (labour_participation-57.5)/(67.5-57.6)*15,color = "Labour Participation Rate"))+
   scale_y_continuous(
-    sec.axis = sec_axis(~./0.15)
+    sec.axis = sec_axis(~./15*(67.5-57.5)+57.5),
+    name = "Rate (%)"
   ) +
   theme_bw() +
-  labs(color = "statistic",x = "Date", y = "Rate") +
+  labs(color = "statistic",x = "Date", y = "Rate (%)") +
   scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
 ```
+:::
+
+::: fragment
 Looks like COVID had a huge hit on labour participation rate as well as unemployment rate.
+:::
 
 ------------------------------------------------------------------------
 
 ### Lets look only at LPR
 
+::: fragment
 ```{r}
 #| echo: false
 date_start <- "2019-01-01"
@@ -184,12 +208,13 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   labs(color = "statistic",x = "Date", y = "Rate") +
   scale_color_manual(values = c("Labour Participation Rate" = LPR_color ))
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Zooming out for more details.
 
-
+::: fragment
 ```{r}
 #| echo: false
 date_start <- "1948-01-01"
@@ -209,15 +234,17 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   labs(color = "statistic",x = "Date", y = "Rate") +
   scale_color_manual(values = c("Labour Participation Rate" = LPR_color ))
 ```
+:::
 
 ------------------------------------------------------------------------
 
 There seems to be a general trend downwards for the labour participation rate, at least since the 2000s. This can mean that more and more people are sick of traditional jobs, and are turning to other forms of financial support.
 
----
+------------------------------------------------------------------------
 
 ### What about the effect of race and sex?
 
+::: fragment
 ```{r}
 #| echo: false
 us_lpr_yearly <- dataset_project |> filter(str_detect(index,"^labour_participation$"))
@@ -237,11 +264,13 @@ dataset_project |> filter(str_detect(index,"LPR")) |> filter(!is.na(value)) |>
     legend.margin = margin(t=0,b=0,unit='pt')
     )
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Seems like the trend for men has been decreasing as well
 
+::: fragment
 ```{r}
 #| echo: false
 dataset_project |> filter(str_detect(index,"LPR")) |> 
@@ -256,13 +285,13 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   theme_bw() +
   labs(color = "Labour Participation",x = "Date", y = "Rate") 
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Lets look at women.
 
-Obviously, they have had a steady increase since the end of WWII up until the 2000s, so lets look only at recent times.
-
+::: fragment
 ```{r}
 #| echo: false
 dataset_project |> filter(str_detect(index,"LPR")) |> 
@@ -277,13 +306,17 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   theme_bw() +
   labs(color = "Labour Participation",x = "Date", y = "Rate") 
 ```
+:::
+
+::: fragment
+Obviously, they have had a steady increase since the end of WWII up until the 2000s, so lets look only at recent times.
+:::
 
 ------------------------------------------------------------------------
 
 ### Zooming in to modern times
 
-Looks like its stagnating a little, going with the general trend of LPR.
-
+::: fragment
 ```{r}
 #| echo: false
 date_start <- "2000-01-01"
@@ -300,6 +333,11 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   theme_bw() +
   labs(color = "Labour Participation",x = "Date", y = "Rate") 
 ```
+:::
+
+::: fragment
+Looks like its stagnating a little, going with the general trend of LPR.
+:::
 
 ------------------------------------------------------------------------
 
@@ -325,7 +363,7 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
 
 ### Alternatively we can look at a bar plot
 
-
+::: fragment
 ```{r}
 #| echo: false
 dataset_project |> filter(str_detect(index,"LPR")) |> 
@@ -341,8 +379,9 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   theme(panel.grid = element_blank()) +
   labs(title = "Mean LPR since 2000", y = "LPR")
 ```
+:::
 
----
+------------------------------------------------------------------------
 
 Looks like for black people the difference between men and women is drastically smaller compared to other races. Possibly due to cultural differences, or societal circumstances.
 
@@ -350,6 +389,7 @@ Looks like for black people the difference between men and women is drastically 
 
 ### What about data for different states?
 
+::: fragment
 ```{r}
 #| echo: false
 #| warning: false
@@ -360,11 +400,13 @@ dataset_project |> filter(str_detect(index,"labour_participation_rate")) |>
   geom_line() +
   facet_wrap(~ index)
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### We can't possibly visualize all states at once. Lets look at NY, CA, and WI.
 
+::: fragment
 ```{r}
 #| warning: false
 #| echo: false
@@ -379,13 +421,13 @@ dataset_project |> filter(str_detect(index,"labour_participation_rate")) |>
   scale_color_manual(values = c("total" = LPR_color, "WI" = "red", NY = "green", "CA" = "magenta"))+
   theme_bw()
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### Wyoming on paper looks good but...
 
-While states like NY and CA have somewhat regained their pre-COVID values, Wyoming has generally continued to stagnate.
-
+::: fragment
 ```{r}
 #| warning: false
 #| echo: false
@@ -405,11 +447,17 @@ dataset_project |> filter(str_detect(index,"labour_participation_rate")) |>
   theme_bw()
 
 ```
+:::
+
+::: fragment
+While states like NY and CA have somewhat regained their pre-COVID values, Wyoming has generally continued to stagnate.
+:::
 
 ------------------------------------------------------------------------
 
 ### Looking at other metrics for Wyoming.
 
+::: fragment
 ```{r}
 #| echo: false
 start_date <- "2007-01-01"
@@ -424,11 +472,13 @@ dataset_project |> filter(str_detect(index,"WI"))|>
   theme_bw()+
   theme(strip.text.x = element_blank(),strip.background = element_blank())
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### These values are all over the place
 
+So lets scale things around for a better picture. ::: {.fragment}
 
 ```{r}
 #| echo: false
@@ -464,10 +514,11 @@ dataset_project |> filter(str_detect(index,"WI"))|>
 
 ```
 
-------------------------------------------------------------------------
+## :::
 
 ### Going back to the federal level
 
+::: fragment
 ```{r}
 #| echo: false
 dataset_project |> filter(str_detect(index,"^UR$|US_median")) |> 
@@ -503,11 +554,12 @@ dataset_project |> filter(str_detect(index,"^UR$|US_median")) |>
   labs(color = "metrics",y="Value ($)")+
   theme_bw()
 ```
+:::
 
 ------------------------------------------------------------------------
 
 ### And many more
 
-This dataset includes over 300 variables, for US and state labour statistics, including such for different race, sex, and age.  
+This dataset includes over 300 variables, for US and state labour statistics, including such for different race, sex, and age.
 
 ![](fred-logo-2x.png) ---
