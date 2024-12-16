@@ -5,6 +5,7 @@ format:
   revealjs: 
     theme: serif
     incremental: true
+    show-slide-number: print
 ---
 
 ### Introduction
@@ -247,22 +248,25 @@ There seems to be a general trend downwards for the labour participation rate, a
 ::: fragment
 ```{r}
 #| echo: false
-us_lpr_yearly <- dataset_project |> filter(str_detect(index,"^labour_participation$"))
-dataset_project |> filter(str_detect(index,"LPR")) |> filter(!is.na(value)) |> 
-  ggplot() +
-  aes(x = date) +
-  geom_line(aes(y = value,color = index))+
-  geom_line(data = us_lpr_yearly,aes(x = date, y= value,linetype = "total"),inherit.aes = FALSE,color=LPR_color) + 
-  scale_color_hue(
-    labels = \(x) str_remove(x,"_LPR") |>  str_replace_all("_", " ")
-  ) +
-  # scale_color_manual(values = \(x) ifelse(x == "total",LPR_color,virid))
+dataset_project |> filter(str_detect(index,"LPR")) |> 
+  filter(!is.na(value)) |> 
+  separate(index, into=c("race","sex","metric"),sep="_") |> 
+  select(-metric) |> 
+  arrange(date) |> 
+  filter(!is.na(race)) |> 
+  ggplot()+
+  aes(x = date)+
+  geom_line(aes(y = value, color = race)) +
+  geom_line(data = us_lpr_yearly,aes(x = date, y= value,linetype = "total"),inherit.aes = FALSE,color=LPR_color,size=0.51) +
+  facet_wrap(~ sex,ncol = 1)+
   theme_bw() + 
-  labs(color = "Labour Participation",x = "Date", y = "Rate",linetype=NULL) +
+  scale_color_brewer(palette = "Dark2")+
+  labs(color = NULL,x = "Date", y = "Rate",linetype="Labour\nParticipation") +
   theme(
-    legend.spacing = unit(-1,'pt'),
+    legend.spacing = unit(1,'pt'),
     legend.margin = margin(t=0,b=0,unit='pt')
-    )
+    )+
+  theme(strip.background = element_blank())
 ```
 :::
 
