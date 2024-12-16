@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 /.quarto/
+/Data_Viz_Name_files/
+*.html
+*.yml
