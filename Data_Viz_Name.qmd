@@ -7,6 +7,11 @@ format:
     incremental: true
     slide-number: true
     show-slide-number: all
+
+knitr:
+  opts_chunk:
+    dev: svg
+    dev.args: { bg: "transparent" }
 ---
 
 ### Introduction
@@ -60,7 +65,15 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   geom_line(aes(y = labour_participation,color = "Labour Participation Rate"))+
   theme_bw() +
   labs(color = "metrics",x = "Date", y = "Rate") +
-  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color )) +
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -90,7 +103,15 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   ) +
   theme_bw() +
   labs(color = "statistic",x = "Date", y = "Rate (%)") +
-  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color )) 
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color )) +
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 
 ```
 :::
@@ -125,7 +146,15 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   ) +
   theme_bw() +
   labs(color = "statistic",x = "Date", y = "Rate (%)") +
-  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 ::: fragment
@@ -159,7 +188,15 @@ dataset_project |> filter(index == "UR" | index == "labour_participation") |>
   ) +
   theme_bw() +
   labs(color = "statistic",x = "Date", y = "Rate (%)") +
-  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))
+  scale_color_manual(values = c("Unemployment Rate" = UR_color,"Labour Participation Rate" = LPR_color ))+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -194,7 +231,15 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
     legend.spacing = unit(1,'pt'),
     legend.margin = margin(t=0,b=0,unit='pt')
     )+
-  theme(strip.background = element_blank())
+  theme(strip.background = element_blank())+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -222,7 +267,15 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   geom_violin(position = position_dodge(width = 0.8))+
   theme_bw() +
   theme(panel.grid = element_blank()) + 
-  labs(y = "LPR")
+  labs(y = "LPR")+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 
 ------------------------------------------------------------------------
@@ -245,7 +298,15 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   geom_bar(position = "dodge",stat = "identity") +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  labs(title = "Mean LPR since 2000", y = "LPR")
+  labs(title = "Mean LPR since 2000", y = "LPR") +
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 
 :::
@@ -267,7 +328,15 @@ dataset_project |> filter(str_detect(index,"LPR")) |>
   theme(panel.grid = element_blank()) +
   annotate("rect", xmin = 2.5, xmax = 3.5, ymin = 55, ymax = 70, 
            alpha = 0.1, color = "black")+
-  labs(title = "Mean LPR since 2000", y = "LPR")
+  labs(title = "Mean LPR since 2000", y = "LPR")+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 ::: fragment
 As we noted before, the difference for Black people is the lowest between all races.
@@ -303,7 +372,15 @@ temp |>
     geo = g,
     autosize = TRUE
     ) |> 
-  animation_button(frame=1,transition = 1)
+  animation_button(frame=1,transition = 1)+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -324,7 +401,15 @@ dataset_project |> filter(str_detect(index,"labour_participation_rate")) |>
   geom_line(data = us_lpr_yearly,aes(color = "total")) + 
   # facet_wrap(~ index) +
   scale_color_manual(values = c("total" = LPR_color, "WI" = "red", NY = "green", "CA" = "magenta"))+
-  theme_bw()
+  theme_bw()+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -355,7 +440,15 @@ dataset_project |> filter(str_detect(index,"WI"))|>
     ) +
   labs(color = "metrics",title = "Wyoming") +
   theme_bw()+
-  theme(strip.background = element_blank())
+  theme(strip.background = element_blank())+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -397,6 +490,14 @@ dataset_project |> filter(str_detect(index,"WI"))|>
   theme(
     axis.ticks.y.left = element_blank(),
     axis.text.y.left = element_blank()
+  )+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
   )
 
 ```
@@ -441,7 +542,15 @@ dataset_project |> filter(str_detect(index,"^UR$|US_median")) |>
     "Median Income" = "magenta"
   ))+
   labs(color = "metrics",y="Value ($)")+
-  theme_bw()
+  theme_bw()+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 :::
 
@@ -460,7 +569,15 @@ dataset_project |>
   aes(x = index,y = value) +
   geom_boxplot() +
   theme_bw()+
-  labs(title = "Relative unemployment rate, compared to general population", y= "Difference")
+  labs(title = "Relative unemployment rate, compared to general population", y= "Difference")+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
 ```
 
 ---
