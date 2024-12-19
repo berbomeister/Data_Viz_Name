@@ -585,6 +585,7 @@ Unfortunately we are missing data for asian people.
 ```{r}
 #| message: false
 #| warning: false
+#| echo: false
 dataset_project |> 
   filter(str_detect(index,"^UR_[white|black|hispanic]+$|^UR$")) |> 
   mutate(index = str_remove(index,"UR_")) |> 
@@ -605,6 +606,7 @@ dataset_project |>
     fill=recession_color,
     alpha = 0.3
     ) +
+  geom_hline(yintercept = 0, linetype = "dotted")+
   theme_bw()+
   labs(
     title = "Relative unemployment rate of races,\ncompared to general population",
@@ -627,6 +629,81 @@ It looks like recessions hit POC harder than white people. We can see that there
 
 ---
 
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+us_ur <- dataset_project |> filter(str_detect(index,"^UR$"))
+dataset_project |> 
+  filter(str_detect(index,"^UR_(women|men)")) |>
+  separate(index,into = c("metric","sex"),sep = "_") |> 
+  filter(!is.na(value)) |> 
+  select(-metric) |> arrange(date) |> 
+  ggplot() +
+  aes(x = date, y = value,color = sex) +
+  geom_line() +
+  geom_smooth(method = "lm",se = FALSE)+
+  geom_rect(
+    data = recessions |> filter(Peak > "1954-01-01"),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3
+    ) +
+  # geom_line(data = us_ur |> filter(date > "1954-01-01"),aes(color = "total")) + 
+  theme_bw()+
+  labs(
+    title = "Relative unemployment rate of races,\ncompared to general population",
+    y= "Difference",
+    caption = "Data is from 1954, the first time race data was collected")+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
+```
+
+---
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+us_ur <- dataset_project |> filter(str_detect(index,"^UR$"))
+dataset_project |> 
+  filter(str_detect(index,"^UR_(women|men)")) |>
+  separate(index,into = c("metric","sex"),sep = "_") |> 
+  filter(!is.na(value)) |> 
+  filter(date > "2000-01-01") |> 
+  select(-metric) |> arrange(date) |> 
+  ggplot() +
+  aes(x = date, y = value,color = sex) +
+  geom_line() +
+  geom_rect(
+    data = recessions |> filter(Peak > "2000-01-01"),
+    aes(xmin = Peak,xmax = Trough,ymin = -Inf,ymax=Inf),
+    inherit.aes= FALSE,
+    fill=recession_color,
+    alpha = 0.3
+    ) +
+  theme_bw()+
+  labs(
+    title = "Unemployment rate of both sexes,\nsince 2000",
+    y= "Difference",
+    caption = "Data is from 1954, the first time race data was collected")+
+  theme(
+    panel.background = element_rect(fill='transparent'), #transparent panel bg
+    plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+    panel.grid.major = element_blank(), #remove major gridlines
+    panel.grid.minor = element_blank(), #remove minor gridlines
+    legend.background = element_rect(fill='transparent'), #transparent legend bg
+    legend.box.background = element_rect(fill='transparent') #transparent legend panel
+  )
+```
+
+---
 ### And many more
 
 This dataset includes over 200 variables, for US and state labour statistics, making it possible to delve into a broad range of visualizations.
